@@ -8,7 +8,6 @@ import app.web.dto.NotificationRequest;
 import app.web.dto.NotificationResponse;
 import app.web.dto.UpsertNotificationPreference;
 import app.web.mapper.DtoMapper;
-import feign.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,5 +100,22 @@ public class NotificationController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseDto);
+    }
+
+    // Delete /api/v1/notifications
+    @DeleteMapping()
+    public ResponseEntity<Void> clearNotificationHistory(@RequestParam(name = "userId") UUID userId) {
+
+        notificationService.clearNotifications(userId);
+
+        return ResponseEntity.ok().body(null);
+    }
+
+    @PutMapping
+    public ResponseEntity<Void> retryFailedNotifications(@RequestParam(name = "userId") UUID userId) {
+
+        notificationService.retryFailedNotifications(userId);
+
+        return ResponseEntity.ok().body(null);
     }
 }
