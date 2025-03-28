@@ -68,8 +68,7 @@ public class NotificationController {
         // Entity
         Notification notification = notificationService.sendNotification(notificationRequest);
 
-
-        // DTO
+       // DTO
         NotificationResponse response = DtoMapper.fromNotification(notification);
 
         return ResponseEntity

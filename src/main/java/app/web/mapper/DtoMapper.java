@@ -25,7 +25,7 @@ public class DtoMapper {
 
 
         return NotificationPreferenceResponse.builder()
-                .Id(entity.getId())
+                .id(entity.getId())
                 .type(entity.getType())
                 .contactInfo(entity.getContactInfo())
                 .enabled(entity.isEnabled())

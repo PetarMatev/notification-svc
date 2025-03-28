@@ -18,10 +18,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -340,7 +342,7 @@ public class NotificationServiceUTest {
         verify(notificationRepository, never()).save(failedNotificationTwo);
     }
 
-    // 6.
+    // 6.sendNotification
     @Test
     void givenUserIdWithExistingPreference_whenUpsert_thenUpdatePreference() {
 

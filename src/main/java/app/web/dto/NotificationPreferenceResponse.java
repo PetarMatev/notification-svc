@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 public class NotificationPreferenceResponse {
 
-    private UUID Id;
+    private UUID id;
 
     private UUID userId;
 
