@@ -1,12 +1,11 @@
 package app.web;
 
 import app.model.NotificationPreference;
+import app.model.NotificationType;
 import app.service.NotificationService;
-import app.web.dto.NotificationPreferenceResponse;
 import app.web.dto.NotificationRequest;
 import app.web.dto.NotificationTypeRequest;
 import app.web.dto.UpsertNotificationPreference;
-import app.web.mapper.DtoMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +15,18 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static app.web.TestBuilder.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.RequestEntity.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(NotificationController.class)
 public class NotificationControllerAPiTest {
@@ -130,5 +129,65 @@ public class NotificationControllerAPiTest {
     }
 
     // 05. changeNotificationPreference
+    @Test
+    void changeNotificationPreference_shouldReturn200AndUpdatedPreference() throws Exception {
 
+        // 01. Build Request
+        UUID userId = UUID.randomUUID();
+        boolean enabled = true;
+
+        NotificationPreference mockPreference = NotificationPreference.builder()
+                .id(UUID.randomUUID())
+                .userId(userId)
+                .type(NotificationType.EMAIL)
+                .enabled(enabled)
+                .contactInfo("user@example.com")
+                .createdOn(LocalDateTime.now())
+                .updatedOn(LocalDateTime.now())
+                .build();
+
+        when(notificationService.changeNotificationPreference(userId, enabled))
+                .thenReturn(mockPreference);
+
+        // 2. Send Request
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/notifications/preferences")
+                        .param("userId", userId.toString())
+                        .param("enabled", String.valueOf(enabled))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.enabled").value(enabled));
+    }
+
+    // 06. clearNotificationHistory
+    @Test
+    void clearNotificationHistory_shouldReturn200AndClearNotifications() throws Exception {
+
+        // 01. Build Request
+        UUID userId = UUID.randomUUID();
+        doNothing().when(notificationService).clearNotifications(userId);
+
+        // 2. Send Request
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/notifications")
+                        .param("userId", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+    }
+
+    // 07. retryFailedNotifications
+    @Test
+    void retryFailedNotifications_shouldReturn200AndRetryFailedNotifications() throws Exception {
+
+        // 01. Build Request
+        UUID userId = UUID.randomUUID();
+        doNothing().when(notificationService).retryFailedNotifications(userId);
+
+        // 2. Send Request
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/notifications")
+                        .param("userId", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+    }
 }
