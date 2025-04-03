@@ -215,6 +215,7 @@ public class NotificationServiceUTest {
     }
 
     // 5. retryFailedNotifications
+
     @Test
     void givenUserIdWithNoPreference_thenThrowException() {
         // Given
@@ -522,6 +523,43 @@ public class NotificationServiceUTest {
         assertFalse(capturedNotification.isDeleted());
         verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
         verify(notificationRepository, times(1)).save(any(Notification.class));
+    }
+
+    @Test
+    void givenUserPreferenceIsDisabled_whenSendNotification_thenThrowIllegalArgumentException() {
+
+        // Given
+        UUID userId = UUID.randomUUID();
+        NotificationRequest notificationRequest = NotificationRequest.builder()
+                .userId(userId)
+                .subject("Test Subject")
+                .body("Test Body")
+                .build();
+
+        NotificationPreference disabledPreference = NotificationPreference.builder()
+                .userId(userId)
+                .enabled(false)  // Notifications disabled
+                .contactInfo("test@email.com")
+                .type(NotificationType.EMAIL)
+                .build();
+
+        when(notificationPreferenceRepository.findByUserId(userId))
+                .thenReturn(Optional.of(disabledPreference));
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> notificationService.sendNotification(notificationRequest)
+        );
+
+        assertEquals(
+                String.format("User with id %s does not allow to receive notifications.", userId),
+                exception.getMessage()
+        );
+
+        verify(notificationPreferenceRepository).findByUserId(userId);
+        verifyNoInteractions(mailSender);
+        verifyNoInteractions(notificationRepository);
     }
 
 }
