@@ -88,7 +88,11 @@ public class NotificationService {
             } catch (Exception e) {
                 notification.setStatus(NotificationStatus.FAILED);
                 String contactInfo = userPreference.getContactInfo();
-                log.warn("There was an issue sending an email to %s due to %s.".formatted(userPreference.getContactInfo(), e.getMessage()));
+                if (userPreference.getContactInfo() == null) {
+                    log.warn("There was an issue sending an email due to missing contact info: {}", e.getMessage());
+                } else {
+                    log.warn("There was an issue sending an email to {} due to {}.", userPreference.getContactInfo(), e.getMessage());
+                }
             }
             notificationRepository.save(notification);
         }
